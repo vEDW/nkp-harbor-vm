@@ -23,42 +23,13 @@
 
 #------------------------------------------------------------------------------
 HARBORFQDN=$(hostname)
-    
-HARBORIP=$(ip add show dev eth0 |grep "inet "|awk '{print $2}'|cut -d "/" -f1)
-read -s -p "Please enter harbor admin password: " HARBORADMINPWD
-echo
-echo "host: $HARBORFQDN"
-echo "ip : $HARBORIP"
-echo "pwd: $HARBORADMINPWD"
-export HARBORFQDN
-export HARBORIP
-export HARBORADMINPWD
 
-./generate_ssl_cert.sh "${HARBORFQDN}" "${HARBORIP}"
-sudo cp ${HARBORFQDN}.crt /opt/harbor
-sudo cp ${HARBORFQDN}.key /opt/harbor
 
-HARBORFQDN=$(hostname)
-
-if [ "${HARBORADMINPWD}" == "" ]; then
-    read -s -p "Please enter password you want to set for harbor admin : " HARBORADMINPWD
+# check if HARBORADMINPWD is set
+if [ -z "${HARBORADMINPWD}" ]; then
+    read -s -p "Please enter harbor admin password: " HARBORADMINPWD
+    echo
 fi
 
-sudo cp /opt/harbor/harbor.yml.tmpl /opt/harbor/harbor.yml
-sudo harborfqdn="${HARBORFQDN}" yq -i '.hostname = strenv(harborfqdn)' /opt/harbor/harbor.yml
-sudo harborcert="/opt/harbor/${HARBORFQDN}.crt" yq -i '.https.certificate = strenv(harborcert)' /opt/harbor/harbor.yml
-sudo harborkey="/opt/harbor/${HARBORFQDN}.key" yq -i '.https.private_key = strenv(harborkey)' /opt/harbor/harbor.yml
-sudo harboradminpwd="${HARBORADMINPWD}" yq -i '.harbor_admin_password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
-sudo harboradminpwd="${HARBORADMINPWD}" yq -i '.database.password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
-sudo yq e /opt/harbor/harbor.yml
-
-echo "press enter to continue"
-read -r
-sudo /opt/harbor/install.sh
-if [ $? -ne 0 ]; then
-    echo "Installation failed. Exiting."
-    exit 1
-fi
-echo "Installation complete"
-echo "checking harbor status"
-docker ps
+#testing if harbor is up
+curl -u "admin:${HARBORADMINPWD}" -H "Content-Type: application/json" -ki https://$HARBORFQDN/api/v2.0/configurations
