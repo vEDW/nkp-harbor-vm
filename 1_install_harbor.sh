@@ -25,7 +25,7 @@
 HARBORFQDN=$(hostname)
     
 HARBORIP=$(ip add show dev eth0 |grep "inet "|awk '{print $2}'|cut -d "/" -f1)
-read -s -p "Please enter your password: " HARBORADMINPWD
+read -s -p "Please enter harbor admin password: " HARBORADMINPWD
 echo
 echo "host: $HARBORFQDN"
 echo "ip : $HARBORIP"
@@ -34,7 +34,7 @@ export HARBORFQDN
 export HARBORIP
 export HARBORADMINPWD
 
-./scripts/generate_ssl_cert.sh "${HARBORFQDN}" "${HARBORIP}"
+./generate_ssl_cert.sh "${HARBORFQDN}" "${HARBORIP}"
 cp ${HARBORFQDN}.crt /opt/harbor
 cp ${HARBORFQDN}.key /opt/harbor
 
