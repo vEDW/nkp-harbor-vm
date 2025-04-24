@@ -45,6 +45,6 @@ if [ $? -ne 0 ]; then
     echo "Extraction failed. Exiting."
     exit 1
 fi
-sudo mv ./yq/yq_linux_amd64 /usr/local/bin/yq
+sudo mv ./yq/yq_linux_amd64 /usr/bin/yq
 rm -rf ./yq/
 yq --version
