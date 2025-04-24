@@ -35,8 +35,8 @@ export HARBORIP
 export HARBORADMINPWD
 
 ./generate_ssl_cert.sh "${HARBORFQDN}" "${HARBORIP}"
-cp ${HARBORFQDN}.crt /opt/harbor
-cp ${HARBORFQDN}.key /opt/harbor
+sudo cp ${HARBORFQDN}.crt /opt/harbor
+sudo cp ${HARBORFQDN}.key /opt/harbor
 
 HARBORFQDN=$(hostname)
 
@@ -44,11 +44,11 @@ if [ "${HARBORADMINPWD}" == "" ]; then
     read -s -p "Please enter password you want to set for harbor admin : " HARBORADMINPWD
 fi
 
-cp /opt/harbor/harbor.yml.tmpl /opt/harbor/harbor.yml
-harborfqdn="${HARBORFQDN}" yq -i '.hostname = strenv(harborfqdn)' /opt/harbor/harbor.yml
-harborcert="/opt/harbor/${HARBORFQDN}.crt" yq -i '.https.certificate = strenv(harborcert)' /opt/harbor/harbor.yml
-harborkey="/opt/harbor/${HARBORFQDN}.key" yq -i '.https.private_key = strenv(harborkey)' /opt/harbor/harbor.yml
-harboradminpwd="${HARBORADMINPWD}" yq -i '.harbor_admin_password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
-harboradminpwd="${HARBORADMINPWD}" yq -i '.database.password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
-yq e /opt/harbor/harbor.yml
+sudo cp /opt/harbor/harbor.yml.tmpl /opt/harbor/harbor.yml
+sudo harborfqdn="${HARBORFQDN}" yq -i '.hostname = strenv(harborfqdn)' /opt/harbor/harbor.yml
+sudo harborcert="/opt/harbor/${HARBORFQDN}.crt" yq -i '.https.certificate = strenv(harborcert)' /opt/harbor/harbor.yml
+sudo harborkey="/opt/harbor/${HARBORFQDN}.key" yq -i '.https.private_key = strenv(harborkey)' /opt/harbor/harbor.yml
+sudo harboradminpwd="${HARBORADMINPWD}" yq -i '.harbor_admin_password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
+sudo harboradminpwd="${HARBORADMINPWD}" yq -i '.database.password = strenv(harboradminpwd)' /opt/harbor/harbor.yml
+sudo yq e /opt/harbor/harbor.yml
 
