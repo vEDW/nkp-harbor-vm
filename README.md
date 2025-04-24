@@ -64,7 +64,9 @@ To create harbor VM:
     ```shell
     git clone https://github.com/vEDW/nkp-harbor-vm.git
     cd nkp-harbor-vm.git
-    
+    ./0_harbor_download.sh
+    ./0_yq_install.sh
+    ./1_install_harbor.sh
     ```
 
 
