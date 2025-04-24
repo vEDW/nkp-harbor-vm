@@ -77,8 +77,7 @@ IP.1=$IP_ADDRESS
 EOL
 
 
-openssl req -out $CSR_FILE -new -newkey rsa:2048 -nodes -keyout $KEY_FILE -extfile $CONFIG_FILE
-
+openssl req -out $CSR_FILE -new -newkey rsa:2048 -nodes -sha256 -keyout $KEY_FILE -config $CONFIG_FILE
 
 openssl x509 -req -days 9999 -in $CSR_FILE -sha256 -signkey $KEY_FILE -out $CERT_FILE -extfile $CONFIG_FILE
 
