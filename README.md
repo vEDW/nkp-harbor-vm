@@ -12,7 +12,8 @@
 
 ## Overview
 
-Harbor () is a registry service. This guide provides a quick and easy way to deploy an harbor instance using the Rocky Linux image provided by Nutanix in the [Nutanix Support Portal](https://portal.nutanix.com/page/downloads?product=nkp).
+Harbor (https://goharbor.io/) is a registry service.
+This guide provides a quick and easy way to deploy an harbor instance using the Rocky Linux image provided by Nutanix in the [Nutanix Support Portal](https://portal.nutanix.com/page/downloads?product=nkp).
 
 ## Prerequisites Checklist
 
@@ -41,7 +42,7 @@ To create harbor VM:
     - Disk Capacity: 128 (default is 20)
     - Guest Customization: Cloud-init (Linux)
     - Custom Script:
-        copy content from this file : [cloud-init](./scripts/cloud-init)
+        copy content from this file : [cloud-init](./cloud-init)
 
     <details>
     <summary>click to view example</summary>
@@ -58,11 +59,14 @@ To create harbor VM:
     ssh nutanix@<jump host_IP>
     ```
 
-1. Install Harobor with the command:
+1. Install Harbor with the command:
 
     ```shell
-    TBD
+    git clone https://github.com/vEDW/nkp-harbor-vm.git
+    cd nkp-harbor-vm.git
+    
     ```
+
 
     
 
