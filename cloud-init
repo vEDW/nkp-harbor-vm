@@ -1,5 +1,5 @@
 #cloud-config
-fqdn: harbor.ntnxlab.local   #Recommended to change the fqdn
+fqdn: harbor-bootstrap.ntnxlab.local   #Recommended to change the fqdn
 ssh_pwauth: true
 chpasswd:
   expire: false
@@ -22,7 +22,6 @@ runcmd:
 - dnf -y install docker-ce docker-ce-cli containerd.io docker-compose-plugin tmux git jq
 - systemctl --now enable docker
 - usermod -aG docker nutanix
-- git clone https://github.com/vEDW/nkp-quickstart.git
 - eject
 - 'wall "If you are seeing this message, please reconnect your SSH session."'
-final_message: "The machine is ready after $UPTIME seconds. Go ahead and install harbor using: $ curl -sL https://raw.githubusercontent.com/nutanixdev/harbor-vm/main/scripts/get-nkp-cli | bash"
+final_message: "The machine is ready after $UPTIME seconds."
