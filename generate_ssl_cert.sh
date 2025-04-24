@@ -61,7 +61,7 @@ openssl genrsa -out "$KEY_FILE" 4096
 openssl req -new -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN"  -key "$KEY_FILE" -out "$CSR_FILE" 
 
 # Create OpenSSL configuration file
-cat > "$CONFIG_FILE" <<EOL
+cat > v3.ext <<EOL
 [req]
 default_bits = 4096
 default_md = sha512
@@ -92,7 +92,7 @@ IP.1=$IP_ADDRESS
 EOL
 
 openssl x509 -req -sha512 -days 3650 \
-    -extfile "$CONFIG_FILE" \
+    -extfile v3.ext \
     -CA ca.crt -CAkey ca.key -CAcreateserial \
     -in "$CSR_FILE"  \
     -out "$CERT_FILE"
