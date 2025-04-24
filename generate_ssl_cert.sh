@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 #------------------------------------------------------------------------------
@@ -31,13 +30,16 @@ if [ $# -lt 2 ]; then
 fi
 
 # Variables
-DOMAIN="$1"
+FQDN="$1"
 IP_ADDRESS="$2"
+HOSTNAME=$(echo $FQDN | cut -d '.' -f 1)
+# Extract the domain name from the FQDN
+DOMAIN=$(echo $FQDN | cut -d '.' -f 2-)
 DAYS=365
-KEY_FILE="${DOMAIN}.key"
-CERT_FILE="${DOMAIN}.crt"
-CSR_FILE="${DOMAIN}.csr"
-CONFIG_FILE="openssl.cnf"
+KEY_FILE="${FQDN}.key"
+CERT_FILE="${FQDN}.crt"
+CSR_FILE="${FQDN}.csr"
+CONFIG_FILE="${FQDN}.cnf"
 COUNTRY="US"    #2 letters country code
 STATE="CA"      #2 letters State Code
 ORGANISATION="Nutanix"
@@ -45,6 +47,18 @@ ORGANISATIONUNIT="Nutanix"
 
 EMAIL=""
 
+# Generate CA
+openssl genrsa -out ca.key 4096
+
+openssl req -x509 -new -nodes -sha512 -days $DAYS \
+ -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN" \
+ -key ca.key \
+ -out ca.crt
+
+# Generate a private key
+openssl genrsa -out "$KEY_FILE" 4096
+# Generate a certificate signing request (CSR)
+openssl req -new -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN"  -key "$KEY_FILE" -out "$CSR_FILE" 
 
 # Create OpenSSL configuration file
 cat > "$CONFIG_FILE" <<EOL
@@ -72,54 +86,18 @@ subjectAltName = @alt_names
 
 [alt_names]
 DNS.1=$DOMAIN
+DNS.2=$HOSTNAME
 IP.1=$IP_ADDRESS
 
 EOL
 
+openssl x509 -req -sha512 -days 3650 \
+    -extfile "$CONFIG_FILE" \
+    -CA ca.crt -CAkey ca.key -CAcreateserial \
+    -in "$CSR_FILE"  \
+    -out "$CERT_FILE"
 
-openssl req -out $CSR_FILE -new -newkey rsa:2048 -nodes -sha256  -keyout $KEY_FILE 
-
-openssl x509 -req -days 9999 -in $CSR_FILE -sha256 -signkey $KEY_FILE -out $CERT_FILE -extfile $CONFIG_FILE
-
-
-# Generate a private key
-#openssl genrsa -out "$KEY_FILE" 2048
-# openssl genrsa -out ca.key 4096
-
-# openssl req -x509 -new -nodes -sha512 -days $DAYS \
-#  -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN" \
-#  -key ca.key \
-#  -out ca.crt
-
-# # Generate a self-signed certificate using the config file
-# #openssl req -new -x509 -noenc -key "$KEY_FILE" -out "$CERT_FILE" -days "$DAYS" -config "$CONFIG_FILE"
-
-# #openssl x509 -inform PEM -in yourdomain.com.crt -out yourdomain.com.cert
-
-# # # 1. Generate CA's private key and self-signed certificate
-# openssl req -x509 -newkey rsa:4096 -days $DAYS -nodes -keyout ca-key.pem -out ca-cert.pem -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN"
-# #openssl req -x509 -newkey rsa:4096 -days $DAYS -nodes -keyout ca-key.pem -out ca-cert.pem -config "$CONFIG_FILE"
-
-# # echo "CA's self-signed certificate"
-# openssl x509 -in ca-cert.pem -noout -text
-
-# # # 2. Generate web server's private key and certificate signing request (CSR)
-# #openssl req -newkey rsa:4096 -keyout server-key.pem -out server-req.pem -subj "/C=NG/ST=Rivers/L=PHC/O=Mono Finance/OU=Finance/CN=*.monofinance.net/emailAddress=mrikehchukwuka@gmail.com"
-# openssl req -newkey rsa:4096 -keyout server-key.pem -out server-req.pem -config "$CONFIG_FILE"
-
-# # # 3. Use CA's private key to sign web server's CSR and get back the signed certificate
-# openssl x509 -req -in server-req.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem -days $DAYS -extfile server-ext.cnf
-
-# # echo "Server's signed certificate"
-# openssl x509 -in server-cert.pem -noout -text
-
-# echo "Command to verify Server and CA certificates"
-# openssl verify -CAfile ca-cert.pem server-cert.pem
-
-# Clean up the configuration file after use
-#rm "$CONFIG_FILE"
-
-#openssl x509 -in $CERT_FILE -text -noout
+openssl x509 -in $CERT_FILE -text -noout
 
 echo
 echo "Certificate and key generated:"
