@@ -61,4 +61,4 @@ if [ $? -ne 0 ]; then
 fi
 echo "Installation complete"
 echo "checking harbor status"
-docker ps
+watch docker ps
