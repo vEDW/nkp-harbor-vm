@@ -47,57 +47,23 @@ ORGANISATIONUNIT="Nutanix"
 
 EMAIL=""
 
-# Generate CA
-openssl genrsa -out ca.key 4096
-
-openssl req -x509 -new -nodes -sha512 -days $DAYS \
- -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN" \
- -key ca.key \
- -out ca.crt
-
-# Generate a private key
-openssl genrsa -out "$KEY_FILE" 4096
-# Generate a certificate signing request (CSR)
-openssl req -new -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN"  -key "$KEY_FILE" -out "$CSR_FILE" 
+openssl req -new -newkey rsa:2048 -nodes -sha256 -subj "/C=$COUNTRY/ST=$STATE/L=City/O=$ORGANISATION/OU=$ORGANISATIONUNIT/CN=$DOMAIN"  -out "$CSR_FILE" -keyout $KEY_FILE
 
 # Create OpenSSL configuration file
 cat > v3.ext <<EOL
-[req]
-default_bits = 4096
-default_md = sha512
-distinguished_name = req_distinguished_name
-x509_extensions = v3_req
-prompt = no
-
-[req_distinguished_name]
-C = $COUNTRY
-ST = $STATE
-L = City
-O = $ORGANISATION
-OU = $ORGANISATIONUNIT
-CN = $DOMAIN
-
-[v3_req]
-authorityKeyIdentifier=keyid,issuer
-basicConstraints=CA:FALSE
-keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid:always,issuer:always
+basicConstraints=CA:TRUE
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment, keyAgreement, keyCertSign
 extendedKeyUsage = serverAuth
-subjectAltName = @alt_names
-
-[alt_names]
-DNS.1=$DOMAIN
-DNS.2=$HOSTNAME
-IP.1=$IP_ADDRESS
+subjectAltName = DNS:*.$DOMAIN,DNS:$HOSTNAME,DNS:$FQDN,IP:$IP_ADDRESS
 
 EOL
 
-openssl x509 -req -sha512 -days 3650 \
-    -extfile v3.ext \
-    -CA ca.crt -CAkey ca.key -CAcreateserial \
-    -in "$CSR_FILE"  \
-    -out "$CERT_FILE"
+openssl x509 -req -sha256 -days 3650 -extfile v3.ext -signkey $KEY_FILE -in "$CSR_FILE" -out "$CERT_FILE"
 
-openssl x509 -in $CERT_FILE -text -noout
+openssl x509 -text -noout -in $CERT_FILE 
+openssl x509 -inform PEM -in $CERT_FILE -out ${FQDN}.cert
 
 echo
 echo "Certificate and key generated:"
